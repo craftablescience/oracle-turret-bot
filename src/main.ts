@@ -1,11 +1,14 @@
 // noinspection JSIgnoredPromiseFromCall
 
 import fs from 'fs';
-import { ActivityType, Collection, GuildMember, IntentsBitField } from 'discord.js';
+import { ActionRowBuilder, ActivityType, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, GuildMember, IntentsBitField, ModalActionRowComponentBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { Callbacks, OracleTurretClient } from './types/client';
 import { Command } from './types/interaction';
+import { LogLevelColor } from './utils/log';
+import { getModChannel } from './utils/mod_channel';
 import { hasPermissionLevel } from './utils/permissions';
 import { updateCommands, updateCommandsForGuild } from './utils/update_commands';
+import { formatUserRaw, getUserOrMemberAvatarAttachment } from './utils/utils';
 
 import * as config from './config.json';
 import * as log from './utils/log';
@@ -182,16 +185,117 @@ async function main() {
 
 	// Listen for banned members
 	client.on('guildBanAdd', async ban => {
-		// todo
-	});
-
-	// Listen for deleted messages
-	client.on('messageDelete', async message => {
-		// Only for members
-		if (!message.guild || !message.member)
+		const modChannel = await getModChannel(ban.client, ban.guild);
+		if (!modChannel) {
 			return;
+		}
 
-		// todo
+		const reportButtonID = `${ban.user.id}_report_btn`;
+		const reportButton = new ButtonBuilder()
+			.setCustomId(reportButtonID)
+			.setLabel('Report')
+			.setStyle(ButtonStyle.Danger);
+
+		const ignoreButtonID = `${ban.user.id}_ignore_btn`;
+		const ignoreButton = new ButtonBuilder()
+			.setCustomId(ignoreButtonID)
+			.setLabel('Ignore')
+			.setStyle(ButtonStyle.Secondary);
+
+		(ban.client as OracleTurretClient).callbacks.addButtonCallback(ignoreButtonID, async btnInteraction => {
+			if (!btnInteraction.inGuild() || !btnInteraction.guild) {
+				return btnInteraction.reply({ content: 'This button must be clicked in a guild.', ephemeral: true });
+			}
+			if (btnInteraction.message.deletable) {
+				return btnInteraction.message.delete();
+			}
+			return btnInteraction.reply({ 'content': 'Ignored ban.', ephemeral: true });
+		});
+
+		(ban.client as OracleTurretClient).callbacks.addButtonCallback(reportButtonID, async btnInteraction => {
+			if (!btnInteraction.inGuild() || !btnInteraction.guild) {
+				return btnInteraction.reply({ content: 'This button must be clicked in a guild.', ephemeral: true });
+			}
+
+			const modal = new ModalBuilder()
+				.setCustomId(reportButtonID + '_modal')
+				.setTitle('Report User');
+
+			const banRationale = new TextInputBuilder()
+				.setCustomId('ban_rationale')
+				.setLabel('Why was this user banned?')
+				.setStyle(TextInputStyle.Short);
+
+			const banEvidence = new TextInputBuilder()
+				.setCustomId('ban_evidence')
+				.setLabel('Evidence of misconduct (if any):')
+				.setStyle(TextInputStyle.Paragraph);
+
+			modal.addComponents(
+				new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(banRationale),
+				new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(banEvidence));
+
+			return btnInteraction.showModal(modal);
+		});
+		(ban.client as OracleTurretClient).callbacks.addModalCallback(reportButtonID + '_modal', async modalInteraction => {
+			const banRationale = modalInteraction.components[0].components[0].value;
+			let banEvidence = modalInteraction.components[1].components[0].value;
+			if (banEvidence.length === 0) {
+				banEvidence = 'No evidence provided.';
+			}
+
+			const [attachment, path] = await getUserOrMemberAvatarAttachment(ban.user, 256);
+
+			const embed = new EmbedBuilder()
+				.setColor(LogLevelColor.WARNING)
+				.setTitle('New Ban Report')
+				.setThumbnail(path)
+				.addFields([
+					{ name: 'Banned User', value: `${ban.user} (${formatUserRaw(ban.user)})` },
+					{ name: 'Originating Server', value: ban.guild?.name ?? 'Unknown' },
+					{ name: 'Why was this user banned?', value: banRationale },
+					{ name: 'Evidence of misconduct (if any):', value: banEvidence },
+					{ name: 'Ban Command', value: `\`/ban user:<@${ban.user.id}>\`` },
+				])
+				.setTimestamp(Date.now());
+
+			const markAsHandledButtonID = `${ban.user.id}_mark_as_handled_btn`;
+			const markAsHandledButton = new ButtonBuilder()
+				.setCustomId(markAsHandledButtonID)
+				.setLabel('🗑️')
+				.setStyle(ButtonStyle.Danger);
+
+			(ban.client as OracleTurretClient).callbacks.addButtonCallback(markAsHandledButtonID, async btnInteraction => {
+				if (!btnInteraction.inGuild() || !btnInteraction.guild) {
+					return btnInteraction.reply({ content: 'This button must be clicked in a guild.', ephemeral: true });
+				}
+				if (btnInteraction.message.deletable) {
+					return btnInteraction.message.delete();
+				}
+				return btnInteraction.reply({ 'content': 'Marked as handled.', ephemeral: true });
+			});
+
+			const actionRow = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents(markAsHandledButton);
+
+			if (modalInteraction.message?.deletable) {
+				await modalInteraction.message.delete();
+			}
+			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed], files: [attachment], components: [actionRow] });
+
+			for (const guild of (await modalInteraction.client.guilds.fetch()).values()) {
+				if (guild.id === modalInteraction.guild?.id)
+					continue;
+
+				const modChannel = await getModChannel(modalInteraction.client, await guild.fetch());
+				await modChannel?.send({ embeds: [embed], files: [attachment], components: [actionRow] });
+			}
+		});
+
+		const actionRow = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(reportButton, ignoreButton);
+
+		await modChannel.send({ 'content': `${ban.user} (${formatUserRaw(ban.user)}) was just banned. Would you like to report them to other servers?`, 'components': [actionRow] });
 	});
 
 	// Log in
