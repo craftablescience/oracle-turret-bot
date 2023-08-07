@@ -1,26 +1,7 @@
-import { AttachmentBuilder, Channel, Guild, GuildChannel, GuildMember, GuildPremiumTier, PartialGuildMember, PartialUser, User } from 'discord.js';
-import { Stream } from 'stream';
+import { AttachmentBuilder, GuildMember, PartialGuildMember, PartialUser, User } from 'discord.js';
 import fetch from 'node-fetch';
 
 export type AvatarSize = 16 | 32 | 64 | 128 | 256 | 512 | 1024 | 2048 | 4096;
-
-export function getUploadLimitForGuild(guild: Guild) {
-	switch (guild.premiumTier) {
-	case GuildPremiumTier.Tier3:
-		return 100;
-	case GuildPremiumTier.Tier2:
-		return 50;
-	default:
-		return 8;
-	}
-}
-
-export function getUploadLimitForChannel(channel: Channel) {
-	if ((channel instanceof GuildChannel) && channel.guild) {
-		return getUploadLimitForGuild(channel.guild);
-	}
-	return 8;
-}
 
 export async function getUserOrMemberAvatarAttachment(user: User | PartialUser | GuildMember | PartialGuildMember, size: AvatarSize = 1024, name = 'avatar'): Promise<[AttachmentBuilder, string]> {
 	const avatar = await fetch(user.displayAvatarURL({ size: size }));
@@ -58,13 +39,4 @@ export function escapeSpecialCharacters(raw: string) {
 		.replaceAll('>', '\\>')   // block quote
 		.replaceAll('|', '\\|')   // spoiler
 		.replaceAll('-', '\\-');  // list
-}
-
-export async function streamToBuffer(stream: Stream) {
-	return new Promise<Buffer>((resolve, reject) => {
-		const buf = Array<Uint8Array>();
-		stream.on('data', chunk => buf.push(chunk));
-		stream.on('end', () => resolve(Buffer.concat(buf)));
-		stream.on('error', err => reject(`Error converting stream: ${err}`));
-	});
 }

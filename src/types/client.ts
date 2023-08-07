@@ -59,7 +59,7 @@ export class Callbacks {
 	}
 }
 
-export class MoralityCoreClient extends Client {
+export class OracleTurretClient extends Client {
 	commands: Collection<string, CommandBase>;
 	callbacks: Callbacks;
 

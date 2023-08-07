@@ -1,9 +1,7 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
 import { LogLevelColor } from '../../utils/log';
 import { PermissionLevel } from '../../utils/permissions';
-
-import * as config from '../../config.json';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJSON: { version: number, dependencies: { 'discord.js': string } } = require('../../../package.json');
@@ -17,15 +15,15 @@ const Info: Command = {
 		.setDescription('Responds with information about the bot.'),
 
 	async execute(interaction: CommandInteraction) {
-		const username = interaction.client.user?.username ?? 'Morality Core';
+		const username = interaction.client.user.displayName;
 
 		const embed = new EmbedBuilder()
 			.setAuthor({
 				name: username,
-				url: 'https://github.com/StrataSource/p2ce-discord-bot',
+				url: 'https://github.com/craftablescience/oracle-turret-bot',
 				iconURL: interaction.client.user?.displayAvatarURL(),
 			})
-			.setDescription('This server\'s robotic helper and moral compass.')
+			.setDescription('Reports bad actors across a network of Portal-related community servers.')
 			.setColor(LogLevelColor.INFO)
 			.addFields(
 				{ name: 'Version', value: `${packageJSON.version}`, inline: true },
@@ -36,14 +34,7 @@ const Info: Command = {
 				{ name: 'Servers', value: `${(await interaction.client.guilds.fetch()).size}`, inline: true })
 			.setTimestamp();
 
-		const inviteButton = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(
-				new ButtonBuilder()
-					.setLabel('Add to Server')
-					.setStyle(ButtonStyle.Link)
-					.setURL(`https://discord.com/api/oauth2/authorize?client_id=${config.client_id}&permissions=8&scope=bot%20applications.commands`));
-
-		return interaction.reply({ embeds: [embed], components: [inviteButton] });
+		return interaction.reply({ embeds: [embed] });
 	}
 };
 export default Info;

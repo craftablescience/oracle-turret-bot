@@ -1,45 +1,8 @@
 {
 	"token": "token goes here",
 	"client_id": "client id goes here",
-	"ipc_port": 23741,
-
-	"p2ce_command_guilds": [],
 
 	"log": {
 		"errors_and_warnings_channel": ""
-	},
-
-	"github": {
-		"auth": {
-			"private_key": "",
-			"app_id": 0,
-			"installation_id": 0,
-			"client_id": "",
-			"client_secret": ""
-		},
-
-		"search_page_length": 5,
-		"search_page_cache_time": 15
-	},
-
-	"keyapp": {
-		"auth": {
-			"credentials": {
-				"type": "",
-				"project_id": "",
-				"private_key_id": "",
-				"private_key": "",
-				"client_email": "",
-				"client_id": "",
-				"auth_uri": "",
-				"token_uri": "",
-				"auth_provider_x509_cert_url": "",
-				"client_x509_cert_url": ""
-			},	
-
-			"sheet_id": ""
-		},
-
-		"hours_to_wait": 1
 	}
 }

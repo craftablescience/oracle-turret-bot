@@ -1,22 +1,19 @@
 import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
-import { getLogFilepath } from '../../utils/log';
 import { PermissionLevel } from '../../utils/permissions';
 
 import * as persist from '../../utils/persist';
 
 const Request: Command = {
-	permissionLevel: PermissionLevel.MODERATOR,
+	permissionLevel: PermissionLevel.ADMINISTRATOR,
 
 	data: new SlashCommandBuilder()
 		.setName('request')
 		.setDescription('Request all stored data relating to this guild.')
+		.setDefaultMemberPermissions(PermissionLevel.ADMINISTRATOR)
 		.addSubcommand(subcommand => subcommand
 			.setName('db')
-			.setDescription('Request this guild\'s database JSON file.'))
-		.addSubcommand(subcommand => subcommand
-			.setName('log')
-			.setDescription('Request this guild\'s entire log file.')),
+			.setDescription('Request this guild\'s database JSON file.')),
 
 	async execute(interaction: CommandInteraction) {
 		if (!interaction.isChatInputCommand()) return;
@@ -27,10 +24,6 @@ const Request: Command = {
 		switch (interaction.options.getSubcommand()) {
 		case 'db': {
 			return interaction.reply({ content: 'Full guild database file:', files: [{ attachment: persist.getDataFilepath(interaction.guild.id) }] });
-		}
-
-		case 'log': {
-			return interaction.reply({ content: 'Full guild log file:', files: [{ attachment: getLogFilepath(interaction.guild.id) }] });
 		}
 		}
 	}

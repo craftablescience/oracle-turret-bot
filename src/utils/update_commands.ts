@@ -10,12 +10,12 @@ import * as persist from './persist';
 export async function updateCommands() {
 	// You need a token, duh
 	if (!config.token) {
-		log.writeToLog(undefined, 'Error updating commands: no token found in config.json!', true);
+		log.writeToLog('Error updating commands: no token found in config.json!', true);
 		return;
 	}
 
 	const dateStart = new Date();
-	log.writeToLog(undefined, `--- UPDATE COMMANDS FOR ALL GUILDS START AT ${dateStart.toDateString()} ${dateStart.getHours()}:${dateStart.getMinutes()}:${dateStart.getSeconds()} ---`, true);
+	log.writeToLog(`--- UPDATE COMMANDS FOR ALL GUILDS START AT ${dateStart.toDateString()} ${dateStart.getHours()}:${dateStart.getMinutes()}:${dateStart.getSeconds()} ---`, true);
 
 	const client = new Client({
 		intents: [
@@ -33,36 +33,25 @@ export async function updateCommands() {
 		globalCommands.push((await import(`../commands/global/${file}`)).default);
 	}
 
-	// Context menus are assumed to be guild-based
-	//for (const file of fs.readdirSync('./build/commands/context_menus/message').filter(file => file.endsWith('.js'))) {
-	//	guildCommands.push((await import(`../commands/context_menus/message/${file}`)).default);
-	//}
-	for (const file of fs.readdirSync('./build/commands/context_menus/user').filter(file => file.endsWith('.js'))) {
-		guildCommands.push((await import(`../commands/context_menus/user/${file}`)).default);
-	}
-
 	// Update commands for every guild
 	const rest = new REST().setToken(config.token);
 	for (const guild of (await client.guilds.fetch()).values()) {
 		const data = persist.data(guild.id);
 		let filteredCommands = guildCommands;
-		if (!config.p2ce_command_guilds.includes(guild.id)) {
-			filteredCommands = filteredCommands.filter(cmd => !Object.hasOwn(cmd, 'isP2CEOnly') || !cmd.isP2CEOnly);
-		}
-		if (!data.config.first_time_setup) {
+		if (!data.first_time_setup) {
 			filteredCommands = filteredCommands.filter(cmd => Object.hasOwn(cmd, 'canBeExecutedWithoutPriorGuildSetup') && cmd.canBeExecutedWithoutPriorGuildSetup);
 		}
 		filteredCommands = filteredCommands.map(cmd => cmd.data.toJSON());
 		await rest.put(Routes.applicationGuildCommands(config.client_id, guild.id), { body: filteredCommands });
-		log.writeToLog(undefined, `Registered ${filteredCommands.length} guild commands for ${guild.id}`, true);
+		log.writeToLog(`Registered ${filteredCommands.length} guild commands for ${guild.id}`, true);
 	}
 
 	// And register global commands
 	await rest.put(Routes.applicationCommands(config.client_id), { body: globalCommands.map(cmd => cmd.data.toJSON()) });
-	log.writeToLog(undefined, `Registered ${globalCommands.length} global commands`, true);
+	log.writeToLog(`Registered ${globalCommands.length} global commands`, true);
 
 	const dateEnd = new Date();
-	log.writeToLog(undefined, `--- UPDATE COMMANDS FOR ALL GUILDS END AT ${dateEnd.toDateString()} ${dateEnd.getHours()}:${dateEnd.getMinutes()}:${dateEnd.getSeconds()} ---`, true);
+	log.writeToLog(`--- UPDATE COMMANDS FOR ALL GUILDS END AT ${dateEnd.toDateString()} ${dateEnd.getHours()}:${dateEnd.getMinutes()}:${dateEnd.getSeconds()} ---`, true);
 	await client.destroy();
 }
 
@@ -72,20 +61,9 @@ export async function updateCommandsForGuild(guildID: string) {
 		guildCommands.push((await import(`../commands/guild/${file}`)).default);
 	}
 
-	// Context menus are assumed to be guild-based
-	//for (const file of fs.readdirSync('./build/commands/context_menus/message').filter(file => file.endsWith('.js'))) {
-	//	guildCommands.push((await import(`../commands/context_menus/message/${file}`)).default);
-	//}
-	for (const file of fs.readdirSync('./build/commands/context_menus/user').filter(file => file.endsWith('.js'))) {
-		guildCommands.push((await import(`../commands/context_menus/user/${file}`)).default);
-	}
-
 	const data = persist.data(guildID);
 	let filteredCommands = guildCommands;
-	if (!config.p2ce_command_guilds.includes(guildID)) {
-		filteredCommands = filteredCommands.filter(cmd => !Object.hasOwn(cmd, 'isP2CEOnly') || !cmd.isP2CEOnly);
-	}
-	if (!data.config.first_time_setup) {
+	if (!data.first_time_setup) {
 		filteredCommands = filteredCommands.filter(cmd => Object.hasOwn(cmd, 'canBeExecutedWithoutPriorGuildSetup') && cmd.canBeExecutedWithoutPriorGuildSetup);
 	}
 	filteredCommands = filteredCommands.map(cmd => cmd.data.toJSON());
@@ -93,5 +71,5 @@ export async function updateCommandsForGuild(guildID: string) {
 	// Update commands for this guild
 	const rest = new REST({ version: '10' }).setToken(config.token);
 	await rest.put(Routes.applicationGuildCommands(config.client_id, guildID), { body: filteredCommands });
-	log.writeToLog(undefined, `Registered ${filteredCommands.length} guild commands for ${guildID}`, true);
+	log.writeToLog(`Registered ${filteredCommands.length} guild commands for ${guildID}`, true);
 }

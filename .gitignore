@@ -10,7 +10,7 @@ yarn.lock
 
 # Generated
 db/guild_*.json
-log/
+log.txt
 
 # Config
 config.json

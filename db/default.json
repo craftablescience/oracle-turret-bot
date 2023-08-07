@@ -1,42 +1,4 @@
 {
-	"autoroles": [],
-	"compat": {
-		"pluralkit": {
-			"accounts": []
-		}
-	},
-	"config": {
-		"first_time_setup": false,
-		"log": {
-			"options": {
-				"user_updates": true,
-				"user_avatar_updates": true,
-				"user_bans": true,
-				"user_joins_and_leaves": true,
-				"user_boosts": true,
-				"message_deletes": true,
-				"message_edits": true,
-				"moderator_events": false,
-				"team_member_events": false
-			},
-			"channel": "",
-			"public_channel": null,
-			"user_exceptions": []
-		},
-		"roles": {
-			"moderator": ""
-		}
-	},
-	"github_repos": {},
-	"moderation": {
-		"warns": {}
-	},
-	"reaction_roles": {},
-	"responses": {},
-	"watched_threads": [],
-	"statistics": {
-		"joins": 0,
-		"leaves": 0
-	},
-	"stickyroles": {}
+	"first_time_setup": false,
+	"mod_channel": ""
 }

@@ -1,27 +1,14 @@
-import { GuildMember } from 'discord.js';
+import {GuildMember, PermissionFlagsBits} from 'discord.js';
 
-import * as persist from '../utils/persist';
+export const PermissionLevel = {
+	EVERYONE: 0n,
+	BAN_MEMBERS: PermissionFlagsBits.BanMembers,
+	ADMINISTRATOR: PermissionFlagsBits.Administrator,
+};
 
-export enum PermissionLevel {
-	EVERYONE    = 0,
-	TEAM_MEMBER = 1,
-	MODERATOR   = 2,
-}
-
-export function hasPermissionLevel(member: GuildMember, permissionLevel: PermissionLevel) {
-	if (permissionLevel === PermissionLevel.EVERYONE) {
+export function hasPermissionLevel(member: GuildMember, permissionLevel: bigint) {
+	if (permissionLevel === PermissionLevel.EVERYONE || member.permissions.has(PermissionLevel.ADMINISTRATOR)) {
 		return true;
 	}
-
-	const data = persist.data(member.guild.id);
-
-	// team member role can be undefined
-	const isTeamMember = data.config.roles.team_member && member.roles.cache.some(role => role.id === data.config.roles.team_member);
-	const isModerator = member.roles.cache.some(role => role.id === data.config.roles.moderator);
-	if (permissionLevel === PermissionLevel.TEAM_MEMBER) {
-		return isTeamMember || isModerator;
-	} else if (permissionLevel === PermissionLevel.MODERATOR) {
-		return isModerator;
-	}
-	return false;
+	return member.permissions.has(permissionLevel);
 }
