@@ -123,8 +123,8 @@ async function main() {
 				return;
 			}
 		} else if (interaction.isButton() || interaction.isStringSelectMenu()) {
-			if (interaction.user !== interaction.message.interaction?.user) {
-				await interaction.reply({ content: `You cannot touch someone else's buttons! These buttons are owned by ${interaction.message.interaction?.user}`, ephemeral: true });
+			if (interaction.message.interaction && interaction.user !== interaction.message.interaction.user) {
+				await interaction.reply({ content: `You cannot touch someone else's buttons! These buttons are owned by ${interaction.message.interaction.user}`, ephemeral: true });
 				return;
 			}
 
@@ -140,6 +140,18 @@ async function main() {
 					await interaction.followUp(`There was an error while pressing this button: ${err}`);
 				} else {
 					await interaction.reply(`There was an error while pressing this button: ${err}`);
+				}
+				return;
+			}
+		} else if (interaction.isModalSubmit()) {
+			try {
+				await client.callbacks.runModalCallback(interaction.customId, interaction);
+			} catch (err) {
+				log.writeToLog((err as Error).toString(), true);
+				if (interaction.deferred) {
+					await interaction.followUp(`There was an error while submitting this modal: ${err}`);
+				} else {
+					await interaction.reply(`There was an error while submitting this modal: ${err}`);
 				}
 				return;
 			}
