@@ -6,13 +6,13 @@ import { updateCommandsForGuild } from '../../utils/update_commands';
 import * as persist from '../../utils/persist';
 
 const Setup: Command = {
-	permissionLevel: PermissionLevel.ADMINISTRATOR,
+	permissionLevel: PermissionLevel.BAN_MEMBERS,
 	canBeExecutedWithoutPriorGuildSetup: true,
 
 	data: new SlashCommandBuilder()
 		.setName('setup')
 		.setDescription('Set necessary configuration options for this guild.')
-		.setDefaultMemberPermissions(PermissionLevel.ADMINISTRATOR)
+		.setDefaultMemberPermissions(PermissionLevel.BAN_MEMBERS)
 		.addChannelOption(option => option
 			.setName('mod_channel')
 			.setDescription('The channel where user reports are sent. Please make sure moderators have it visible and unmuted')
