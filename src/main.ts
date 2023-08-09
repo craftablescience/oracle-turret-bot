@@ -189,6 +189,11 @@ async function main() {
 
 	// Listen for banned members
 	client.on('guildBanAdd', async ban => {
+		const data = persist.data(ban.guild.id);
+		if (data.seen_accounts.includes(ban.user.id)) {
+			return;
+		}
+
 		const modChannel = await getModChannel(ban.client, ban.guild);
 		if (!modChannel) {
 			return;
@@ -266,7 +271,7 @@ async function main() {
 			const markAsHandledButtonID = `${ban.user.id}_mark_as_handled_btn`;
 			const markAsHandledButton = new ButtonBuilder()
 				.setCustomId(markAsHandledButtonID)
-				.setLabel('🗑️')
+				.setEmoji('🗑️')
 				.setStyle(ButtonStyle.Danger);
 
 			(ban.client as OracleTurretClient).callbacks.addButtonCallback(markAsHandledButtonID, async btnInteraction => {
@@ -288,11 +293,17 @@ async function main() {
 			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed], files: [attachment], components: [actionRow] });
 
 			for (const guild of (await modalInteraction.client.guilds.fetch()).values()) {
-				if (guild.id === modalInteraction.guild?.id)
+				const guildData = persist.data(guild.id);
+				if (guildData.seen_accounts.includes(ban.user.id))
 					continue;
 
-				const modChannel = await getModChannel(modalInteraction.client, await guild.fetch());
-				await modChannel?.send({ embeds: [embed], files: [attachment], components: [actionRow] });
+				if (guild.id !== modalInteraction.guild?.id) {
+					const modChannel = await getModChannel(modalInteraction.client, await guild.fetch());
+					await modChannel?.send({ embeds: [embed], files: [attachment], components: [actionRow] });
+				}
+
+				guildData.seen_accounts.push(ban.user.id);
+				persist.saveData(guild.id);
 			}
 		});
 
