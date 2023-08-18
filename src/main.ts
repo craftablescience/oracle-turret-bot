@@ -58,7 +58,16 @@ async function main() {
 		}
 
 		const statusSetter = () => {
-			client.user?.setActivity(`${client.guilds.cache.size} servers`, { type: ActivityType.Listening });
+			if (!client.user)
+				return;
+
+			let guildCount: number;
+			if (client.application && client.application.approximateGuildCount) {
+				guildCount = client.application.approximateGuildCount;
+			} else {
+				guildCount = client.guilds.cache.size;
+			}
+			client.user.setActivity(`${guildCount} servers`, { type: ActivityType.Listening });
 		};
 		statusSetter();
 		setInterval(statusSetter, 120e3);
