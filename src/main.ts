@@ -117,7 +117,7 @@ async function main() {
 			try {
 				await command.execute(interaction, client.callbacks);
 			} catch (err) {
-				await log.error(client, err as Error);
+				await log.error(client, err as Error, interaction.guild?.id);
 				if (interaction.deferred) {
 					await interaction.followUp(`There was an error while executing this command: ${err}`);
 				} else {
@@ -138,7 +138,7 @@ async function main() {
 					await client.callbacks.runSelectMenuCallback(interaction.customId, interaction);
 				}
 			} catch (err) {
-				await log.error(client, err as Error);
+				await log.error(client, err as Error, interaction.guild?.id);
 				if (interaction.deferred) {
 					await interaction.followUp(`There was an error while pressing this button: ${err}`);
 				} else {
@@ -150,7 +150,7 @@ async function main() {
 			try {
 				await client.callbacks.runModalCallback(interaction.customId, interaction);
 			} catch (err) {
-				await log.error(client, err as Error);
+				await log.error(client, err as Error, interaction.guild?.id);
 				if (interaction.deferred) {
 					await interaction.followUp(`There was an error while submitting this modal: ${err}`);
 				} else {
