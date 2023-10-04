@@ -8,7 +8,7 @@ import { LogLevelColor } from './utils/log';
 import { getModChannel } from './utils/mod_channel';
 import { hasPermissionLevel } from './utils/permissions';
 import { updateCommands, updateCommandsForGuild } from './utils/update_commands';
-import { formatUserRaw, getUserOrMemberAvatarAttachment } from './utils/utils';
+import { formatUserRaw /*, getUserOrMemberAvatarAttachment*/ } from './utils/utils';
 
 import * as config from './config.json';
 import * as log from './utils/log';
@@ -249,12 +249,12 @@ async function main() {
 				banEvidence = 'No evidence provided.';
 			}
 
-			const [attachment, path] = await getUserOrMemberAvatarAttachment(ban.user, 256);
+			//const [attachment, path] = await getUserOrMemberAvatarAttachment(ban.user, 256);
 
 			const embed = new EmbedBuilder()
 				.setColor(LogLevelColor.WARNING)
 				.setTitle('New Ban Report')
-				.setThumbnail(path)
+				//.setThumbnail(path)
 				.addFields([
 					{ name: 'Banned User', value: `${ban.user} (${formatUserRaw(ban.user)})` },
 					{ name: 'Originating Server', value: ban.guild?.name ?? 'Unknown' },
@@ -286,7 +286,7 @@ async function main() {
 			if (modalInteraction.message?.deletable) {
 				await modalInteraction.message.delete();
 			}
-			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed], files: [attachment], components: [actionRow] });
+			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed], /*files: [attachment],*/ components: [actionRow] });
 
 			for (const guild of (await modalInteraction.client.guilds.fetch()).values()) {
 				const guildData = persist.data(guild.id);
@@ -295,7 +295,7 @@ async function main() {
 
 				if (guild.id !== modalInteraction.guild?.id) {
 					const modChannel = await getModChannel(modalInteraction.client, await guild.fetch());
-					await modChannel?.send({ embeds: [embed], files: [attachment], components: [actionRow] });
+					await modChannel?.send({ embeds: [embed], /*files: [attachment],*/ components: [actionRow] });
 				}
 
 				guildData.seen_accounts.push(ban.user.id);
