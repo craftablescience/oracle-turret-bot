@@ -257,6 +257,7 @@ async function main() {
 				//.setThumbnail(path)
 				.addFields([
 					{ name: 'Banned User', value: `${ban.user} (${formatUserRaw(ban.user)})` },
+					{ name: 'Account Age', value: `<t:${(ban.user.createdTimestamp / 1000.0).toFixed()}:R>` },
 					{ name: 'Originating Server', value: ban.guild?.name ?? 'Unknown' },
 					{ name: 'Why was this user banned?', value: banRationale },
 					{ name: 'Evidence of misconduct:', value: banEvidence },
