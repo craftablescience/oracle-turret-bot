@@ -304,7 +304,7 @@ async function main() {
 				}
 
 				await btnInteraction.guild.bans.create(ban.user, { reason: `Banned by Oracle Turret - "${banRationale}" https://discord.com/channels/${btnInteraction.message.guildId}/ ${btnInteraction.message.channelId}/${btnInteraction.message.id}` });
-				return btnInteraction.reply({ content: `Banned user ${ban.user}!` });
+				return btnInteraction.reply({ content: `${btnInteraction.user} banned user ${ban.user}!` });
 			});
 
 			const actionRow = new ActionRowBuilder<ButtonBuilder>()
