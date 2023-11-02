@@ -291,6 +291,12 @@ async function main() {
 					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: you are missing the Ban Members permission!`, ephemeral: true });
 				}
 
+				// Check guild already banned member
+				const guildBans = await btnInteraction.guild.bans.fetch().catch(() => null);
+				if (guildBans && guildBans.find(guildBan => guildBan.user.id === ban.user.id)) {
+					return btnInteraction.reply({ content: 'User is already banned in this server!', ephemeral: true });
+				}
+
 				// Check member is bannable
 				const bannedMember = await btnInteraction.guild.members.fetch(ban.user.id).catch(() => null);
 				if (bannedMember && !bannedMember.bannable) {
