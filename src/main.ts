@@ -1,7 +1,7 @@
 // noinspection JSIgnoredPromiseFromCall
 
 import fs from 'fs';
-import { ActionRowBuilder, ActivityType, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, GuildMember, IntentsBitField, ModalActionRowComponentBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { ActionRowBuilder, ActivityType, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, GuildMember, IntentsBitField, ModalActionRowComponentBuilder, ModalBuilder, PermissionsBitField, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { Callbacks, OracleTurretClient } from './types/client';
 import { Command } from './types/interaction';
 import { LogLevelColor } from './utils/log';
@@ -233,7 +233,7 @@ async function main() {
 
 			const banEvidence = new TextInputBuilder()
 				.setCustomId('ban_evidence')
-				.setLabel('Evidence of misconduct (if any):')
+				.setLabel('Evidence of misconduct:')
 				.setStyle(TextInputStyle.Paragraph);
 
 			modal.addComponents(
@@ -259,34 +259,56 @@ async function main() {
 					{ name: 'Banned User', value: `${ban.user} (${formatUserRaw(ban.user)})` },
 					{ name: 'Originating Server', value: ban.guild?.name ?? 'Unknown' },
 					{ name: 'Why was this user banned?', value: banRationale },
-					{ name: 'Evidence of misconduct (if any):', value: banEvidence },
-					{ name: 'Ban Command', value: `\`/ban user:<@${ban.user.id}>\`` },
+					{ name: 'Evidence of misconduct:', value: banEvidence },
+					{ name: 'Manual Ban Command', value: `\`/ban user:<@${ban.user.id}>\`` },
 				])
 				.setTimestamp(Date.now());
 
-			const markAsHandledButtonID = `${ban.user.id}_mark_as_handled_btn`;
-			const markAsHandledButton = new ButtonBuilder()
-				.setCustomId(markAsHandledButtonID)
-				.setEmoji('🗑️')
+			const quickBanButtonID = `${ban.user.id}_quick_ban_btn`;
+			const quickBanButton = new ButtonBuilder()
+				.setCustomId(quickBanButtonID)
+				.setLabel('Ban User')
 				.setStyle(ButtonStyle.Danger);
 
-			(ban.client as OracleTurretClient).callbacks.addButtonCallback(markAsHandledButtonID, async btnInteraction => {
+			(ban.client as OracleTurretClient).callbacks.addButtonCallback(quickBanButtonID, async btnInteraction => {
 				if (!btnInteraction.inGuild() || !btnInteraction.guild) {
 					return btnInteraction.reply({ content: 'This button must be clicked in a guild.', ephemeral: true });
 				}
-				if (btnInteraction.message.deletable) {
-					return btnInteraction.message.delete();
+
+				// Sanity check
+				if (ban.user.id === btnInteraction.guild.members.me?.id) {
+					return btnInteraction.reply({ content: 'Unable to ban myself!', ephemeral: true });
 				}
-				return btnInteraction.reply({ 'content': 'Marked as handled.', ephemeral: true });
+
+				// Check bot has ban permission
+				if (!btnInteraction.guild.members.me?.permissions.has(PermissionsBitField.Flags.BanMembers)) {
+					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: this bot does not have the Ban Members permission in this server!`, ephemeral: true });
+				}
+
+				// Check caller has ban permission
+				const callingMember = await btnInteraction.guild.members.fetch(btnInteraction.user).catch(() => null);
+				if (!callingMember?.permissions.has(PermissionsBitField.Flags.BanMembers)) {
+					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: you are missing the Ban Members permission!`, ephemeral: true });
+				}
+
+				// Check member is bannable
+				const bannedMember = await btnInteraction.guild.members.fetch(ban.user.id).catch(() => null);
+				if (bannedMember && !bannedMember.bannable) {
+					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: they are not bannable!`, ephemeral: true });
+				}
+
+				await btnInteraction.guild.bans.create(ban.user, { reason: `Banned by Oracle Turret - "${banRationale}" https://discord.com/channels/${btnInteraction.message.guildId}/ ${btnInteraction.message.channelId}/${btnInteraction.message.id}` });
+				return btnInteraction.reply({ content: `Banned user ${ban.user}!` });
 			});
 
 			const actionRow = new ActionRowBuilder<ButtonBuilder>()
-				.addComponents(markAsHandledButton);
+				.addComponents(quickBanButton);
 
 			if (modalInteraction.message?.deletable) {
 				await modalInteraction.message.delete();
 			}
-			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed], /*files: [attachment],*/ components: [actionRow] });
+			// Don't show the action row on this embed, it only has a redundant "Ban User" button
+			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed], /*files: [attachment],*/ });
 
 			for (const guild of (await modalInteraction.client.guilds.fetch()).values()) {
 				const guildData = persist.data(guild.id);
@@ -306,7 +328,7 @@ async function main() {
 		const actionRow = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(reportButton, ignoreButton);
 
-		await modChannel.send({ 'content': `${ban.user} (${formatUserRaw(ban.user)}) was just banned. Would you like to report them to other servers?`, 'components': [actionRow] });
+		await modChannel.send({ content: `${ban.user} (${formatUserRaw(ban.user)}) was just banned. Would you like to report them to other servers?`, components: [actionRow] });
 	});
 
 	// Log in
