@@ -14,6 +14,8 @@ const ServerList: Command = {
 	async execute(interaction: CommandInteraction) {
 		let list = '';
 
+		await interaction.deferReply({ ephemeral: true });
+
 		const guilds = await interaction.client.guilds.fetch();
 		for (const guild of guilds.values()) {
 			list += '\n' + `- ${guild.name} (\`${guild.id}\`): ${(await guild.fetch()).memberCount} members`;
@@ -26,7 +28,7 @@ const ServerList: Command = {
 			.setColor(LogLevelColor.INFO)
 			.setTimestamp();
 
-		return interaction.reply({ embeds: [embed], ephemeral: true });
+		return interaction.editReply({ embeds: [embed] });
 	}
 };
 export default ServerList;
