@@ -324,7 +324,11 @@ async function main() {
 
 				if (guild.id !== modalInteraction.guild?.id) {
 					const modChannel = await getModChannel(modalInteraction.client, await guild.fetch());
-					await modChannel?.send({ embeds: [embed], /*files: [attachment],*/ components: [actionRow] });
+					try {
+						await modChannel?.send({embeds: [embed], /*files: [attachment],*/ components: [actionRow]});
+					} catch {
+						await log.error(client, `Unable to send ban report to guild "${guild.name}" (${guild.id}): check channel permissions!`);
+					}
 				}
 
 				guildData.seen_accounts.push(ban.user.id);
