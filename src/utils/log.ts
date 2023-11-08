@@ -28,7 +28,7 @@ async function generateErrorEmbed(error: string | Error, guildID?: string | unde
 	const embed = new EmbedBuilder();
 	const attachments: AttachmentBuilder[] = [];
 
-	embed.setTitle(error instanceof Error ? (error.name ? error.name : error.toString()) : 'Error');
+	embed.setTitle(error instanceof Error ? (error.name ? error.name : error.toString()) : 'Error [Custom]');
 	embed.setColor(LogLevelColor.ERROR);
 
 	if (guildID) {
