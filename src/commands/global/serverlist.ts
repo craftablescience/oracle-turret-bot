@@ -16,8 +16,9 @@ const ServerList: Command = {
 
 		const guilds = await interaction.client.guilds.fetch();
 		for (const guild of guilds.values()) {
-			list += `- ${guild.name} (\`${guild.id}\`)`;
+			list += '\n' + `- ${guild.name} (\`${guild.id}\`): ${(await guild.fetch()).memberCount} members`;
 		}
+		list = list.substring(1);
 
 		const embed = new EmbedBuilder()
 			.setTitle('Server List')
