@@ -317,7 +317,8 @@ async function main() {
 			// Don't show the action row on this embed, it only has a redundant "Ban User" button
 			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed], /*files: [attachment],*/ });
 
-			for (const guild of (await modalInteraction.client.guilds.fetch()).values()) {
+			for (const oaGuild of (await modalInteraction.client.guilds.fetch()).values()) {
+				const guild = await oaGuild.fetch();
 				const guildData = persist.data(guild.id);
 				if (guildData.seen_accounts.includes(ban.user.id))
 					continue;
@@ -325,7 +326,15 @@ async function main() {
 				const logMissingPerms = async () => await log.error(client, `Unable to send ban report to guild "${guild.name}" (${guild.id}): check channel permissions!`);
 
 				if (guild.id !== modalInteraction.guild?.id) {
-					const modChannel = await getModChannel(modalInteraction.client, await guild.fetch());
+					if (guild.members.me?.permissions.has(PermissionsBitField.Flags.BanMembers)) {
+						if ((await guild.bans.fetch()).find(userBan => userBan.user.id === ban.user.id)) {
+							guildData.seen_accounts.push(ban.user.id);
+							persist.saveData(guild.id);
+							continue;
+						}
+					}
+
+					const modChannel = await getModChannel(modalInteraction.client, guild);
 					if (!modChannel) {
 						await logMissingPerms();
 						continue;

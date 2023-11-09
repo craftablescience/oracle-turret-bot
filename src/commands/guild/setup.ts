@@ -42,7 +42,7 @@ const Setup: Command = {
 		await updateCommandsForGuild(interaction.guild.id);
 
 		if (firstRun) {
-			return interaction.editReply('Your guild is set up!');
+			return interaction.editReply('Your server is set up!\n\nBefore you go, please consider giving this bot the `Ban Members` permission: it allows the "Ban User" button on ban reports to work, and allows the bot to check if a reported user is already banned before sending a ban report in this server. This permission is not and will never be required for core functionality.');
 		}
 		return interaction.editReply('Configuration has been updated!');
 	}
