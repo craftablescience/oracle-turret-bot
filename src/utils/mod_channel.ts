@@ -1,4 +1,4 @@
-import { Client, Guild, GuildTextBasedChannel, PermissionFlagsBits } from 'discord.js';
+import { Client, Guild, GuildTextBasedChannel, PermissionsBitField } from 'discord.js';
 
 import * as persist from './persist';
 
@@ -12,8 +12,11 @@ export async function getModChannel(client: Client, guild: Guild): Promise<Guild
 
 	const modChannelID = data.mod_channel;
 	const modChannel = await guild.channels.fetch(modChannelID);
-	if (!modChannel || !modChannel.isTextBased() || !modChannel.permissionsFor(client.user.id)?.has(PermissionFlagsBits.SendMessages))
-		return null;
-
-	return modChannel;
+	if (modChannel &&
+		modChannel.isTextBased() &&
+		modChannel.permissionsFor(client.user)?.has(PermissionsBitField.Flags.ViewChannel) &&
+		modChannel.permissionsFor(client.user)?.has(PermissionsBitField.Flags.SendMessages)) {
+		return modChannel;
+	}
+	return null;
 }

@@ -322,10 +322,15 @@ async function main() {
 				if (guildData.seen_accounts.includes(ban.user.id))
 					continue;
 
+				const logMissingPerms = async () => await log.error(client, `Unable to send ban report to guild "${guild.name}" (${guild.id}): check channel permissions!`);
+
 				if (guild.id !== modalInteraction.guild?.id) {
 					const modChannel = await getModChannel(modalInteraction.client, await guild.fetch());
-					await modChannel?.send({ embeds: [embed], /*files: [attachment],*/ components: [actionRow] }).catch(() =>
-						log.error(client, `Unable to send ban report to guild "${guild.name}" (${guild.id}): check channel permissions!`));
+					if (!modChannel) {
+						await logMissingPerms();
+						continue;
+					}
+					await modChannel.send({ embeds: [embed], /*files: [attachment],*/ components: [actionRow] }).catch(() => logMissingPerms());
 				}
 
 				guildData.seen_accounts.push(ban.user.id);
