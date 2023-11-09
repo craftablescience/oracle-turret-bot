@@ -4,7 +4,7 @@ import { AttachmentBuilder, Client, EmbedBuilder } from 'discord.js';
 import * as config from '../config.json';
 
 export enum LogLevelColor {
-	INFO      = '#2f3136',
+	INFO      = '#2b2d31',
 	WARNING   = '#ffd700',
 	ERROR     = '#ff0000',
 }
