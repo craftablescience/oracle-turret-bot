@@ -283,13 +283,13 @@ async function main() {
 
 				// Check bot has ban permission
 				if (!btnInteraction.guild.members.me?.permissions.has(PermissionsBitField.Flags.BanMembers)) {
-					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: this bot does not have the Ban Members permission in this server!`, ephemeral: true });
+					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: this bot does not have the \`Ban Members\` permission!`, ephemeral: true });
 				}
 
 				// Check caller has ban permission
 				const callingMember = await btnInteraction.guild.members.fetch(btnInteraction.user).catch(() => null);
 				if (!callingMember?.permissions.has(PermissionsBitField.Flags.BanMembers)) {
-					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: you are missing the Ban Members permission!`, ephemeral: true });
+					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: you are missing the \`Ban Members\` permission!`, ephemeral: true });
 				}
 
 				// Check guild already banned member

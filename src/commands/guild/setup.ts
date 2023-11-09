@@ -1,4 +1,4 @@
-import { ChannelType, CommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { ChannelType, CommandInteraction, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
 import { PermissionLevel } from '../../utils/permissions';
 import { updateCommandsForGuild } from '../../utils/update_commands';
@@ -27,18 +27,22 @@ const Setup: Command = {
 
 		await interaction.deferReply({ ephemeral: true });
 
+		const modChannel = interaction.options.getChannel('mod_channel', true, [ChannelType.GuildText]);
+		if (!modChannel.permissionsFor(interaction.client.user)?.has(PermissionsBitField.Flags.ViewChannel) ||
+			!modChannel.permissionsFor(interaction.client.user)?.has(PermissionsBitField.Flags.SendMessages)) {
+			return interaction.editReply(`This bot cannot send messages in the channel ${modChannel}! Please give this bot the \`View Channel\` and \`Send Messages\` permissions in ${modChannel}, or choose a different channel.`);
+		}
+
 		const data = persist.data(interaction.guild.id);
-
 		const firstRun = !data.first_time_setup;
-
-		data.mod_channel = interaction.options.getChannel('mod_channel', true).id;
+		data.mod_channel = modChannel.id;
 		data.first_time_setup = true;
 		persist.saveData(interaction.guild.id);
 
 		await updateCommandsForGuild(interaction.guild.id);
 
 		if (firstRun) {
-			return interaction.editReply('Your guild is set up! All commands are now available.');
+			return interaction.editReply('Your guild is set up!');
 		}
 		return interaction.editReply('Configuration has been updated!');
 	}
