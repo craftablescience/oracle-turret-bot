@@ -1,15 +1,15 @@
-import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
 import { LogLevelColor } from '../../utils/log';
 import { PermissionLevel } from '../../utils/permissions';
 
 const ServerList: Command = {
-	permissionLevel: PermissionLevel.EVERYONE,
-	canBeExecutedWithoutPriorGuildSetup: true,
+	permissionLevel: PermissionLevel.BAN_MEMBERS,
 
 	data: new SlashCommandBuilder()
 		.setName('serverlist')
-		.setDescription('View all servers that have this bot installed.'),
+		.setDescription('View all servers that have this bot installed.')
+		.setDefaultMemberPermissions(PermissionsBitField.Flags.BanMembers),
 
 	async execute(interaction: CommandInteraction) {
 		let list = '';
