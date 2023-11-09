@@ -1,7 +1,10 @@
 import { CommandInteraction, EmbedBuilder, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
 import { LogLevelColor } from '../../utils/log';
+import { getModChannel } from '../../utils/mod_channel';
 import { PermissionLevel } from '../../utils/permissions';
+
+import * as persist from '../../utils/persist';
 
 const ServerList: Command = {
 	permissionLevel: PermissionLevel.BAN_MEMBERS,
@@ -17,8 +20,11 @@ const ServerList: Command = {
 		await interaction.deferReply({ ephemeral: true });
 
 		const guilds = await interaction.client.guilds.fetch();
-		for (const guild of guilds.values()) {
-			list += '\n' + `- ${guild.name} (\`${guild.id}\`): ${(await guild.fetch()).memberCount} members`;
+		for (const oaGuild of guilds.values()) {
+			const data = persist.data(oaGuild.id);
+			const guild = await oaGuild.fetch();
+			const modChannel = await getModChannel(interaction.client, guild);
+			list += `\n- \`${!data.first_time_setup ? '—' : (modChannel ? '✔' : '✖')}\` ${guild.name} (\`${guild.id}\`): ${(await guild.fetch()).memberCount} members`;
 		}
 		list = list.substring(1);
 
