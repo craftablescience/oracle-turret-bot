@@ -320,7 +320,7 @@ async function main() {
 			for (const oaGuild of (await modalInteraction.client.guilds.fetch()).values()) {
 				const guild = await oaGuild.fetch();
 				const guildData = persist.data(guild.id);
-				if (guildData.seen_accounts.includes(ban.user.id))
+				if (!guildData.first_time_setup || guildData.seen_accounts.includes(ban.user.id))
 					continue;
 
 				const logMissingPerms = async () => await log.error(client, `Unable to send ban report to guild "${guild.name}" (${guild.id}): check channel permissions!`);
