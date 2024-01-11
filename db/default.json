@@ -1,5 +1,6 @@
 {
 	"first_time_setup": false,
 	"mod_channel": "",
-	"seen_accounts": []
+	"seen_accounts": [],
+	"allow_bans_from_anyone": false
 }

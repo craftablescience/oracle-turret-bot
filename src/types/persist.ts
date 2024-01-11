@@ -3,4 +3,5 @@ export interface PersistentData {
 	first_time_setup: boolean,
 	mod_channel: string,
 	seen_accounts: string[],
+	allow_bans_from_anyone?: boolean,
 }

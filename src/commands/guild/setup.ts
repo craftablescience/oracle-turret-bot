@@ -17,7 +17,10 @@ const Setup: Command = {
 			.setName('mod_channel')
 			.setDescription('The channel where user reports are sent. Please make sure moderators have it visible and unmuted')
 			.addChannelTypes(ChannelType.GuildText)
-			.setRequired(true)),
+			.setRequired(true))
+		.addBooleanOption(option => option
+			.setName('allow_bans_from_anyone')
+			.setDescription('Allow members without the "Ban User" permission to interact with the ban report system.')),
 
 	async execute(interaction: CommandInteraction) {
 		if (!interaction.isChatInputCommand()) return;
@@ -37,6 +40,7 @@ const Setup: Command = {
 		const firstRun = !data.first_time_setup;
 		data.mod_channel = modChannel.id;
 		data.first_time_setup = true;
+		data.allow_bans_from_anyone = !!interaction.options.getBoolean('allow_bans_from_anyone');
 		persist.saveData(interaction.guild.id);
 
 		await updateCommandsForGuild(interaction.guild.id);

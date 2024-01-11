@@ -287,9 +287,11 @@ async function main() {
 				}
 
 				// Check caller has ban permission
-				const callingMember = await btnInteraction.guild.members.fetch(btnInteraction.user).catch(() => null);
-				if (!callingMember?.permissions.has(PermissionsBitField.Flags.BanMembers)) {
-					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: you are missing the \`Ban Members\` permission!`, ephemeral: true });
+				if (!persist.data(btnInteraction.guild.id).allow_bans_from_anyone) {
+					const callingMember = await btnInteraction.guild.members.fetch(btnInteraction.user).catch(() => null);
+					if (!callingMember?.permissions.has(PermissionsBitField.Flags.BanMembers)) {
+						return btnInteraction.reply({ content: `Unable to ban ${ban.user}: you are missing the \`Ban Members\` permission!`, ephemeral: true });
+					}
 				}
 
 				// Check guild already banned member
