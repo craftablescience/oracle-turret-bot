@@ -20,7 +20,7 @@ const Setup: Command = {
 			.setRequired(true))
 		.addBooleanOption(option => option
 			.setName('allow_bans_from_anyone')
-			.setDescription('Allow members without the "Ban User" permission to interact with the ban report system.')),
+			.setDescription('Allow members without the "Ban User" permission to interact with the ban report system')),
 
 	async execute(interaction: CommandInteraction) {
 		if (!interaction.isChatInputCommand()) return;

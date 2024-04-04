@@ -13,7 +13,7 @@ const Request: Command = {
 		.setDefaultMemberPermissions(PermissionLevel.ADMINISTRATOR)
 		.addSubcommand(subcommand => subcommand
 			.setName('db')
-			.setDescription('Request this guild\'s database JSON file.')),
+			.setDescription('Request this guild\'s database JSON file')),
 
 	async execute(interaction: CommandInteraction) {
 		if (!interaction.isChatInputCommand()) return;
