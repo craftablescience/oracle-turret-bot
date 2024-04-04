@@ -8,7 +8,7 @@ import { LogLevelColor } from './utils/log';
 import { getModChannel } from './utils/mod_channel';
 import { hasPermissionLevel } from './utils/permissions';
 import { updateCommands, updateCommandsForGuild } from './utils/update_commands';
-import { formatUserRaw /*, getUserOrMemberAvatarAttachment*/ } from './utils/utils';
+import { formatUserRaw } from './utils/utils';
 
 import * as config from './config.json';
 import * as log from './utils/log';
@@ -249,12 +249,9 @@ async function main() {
 				banEvidence = 'No evidence provided.';
 			}
 
-			//const [attachment, path] = await getUserOrMemberAvatarAttachment(ban.user, 256);
-
 			const embed = new EmbedBuilder()
 				.setColor(LogLevelColor.WARNING)
 				.setTitle('New Ban Report')
-				//.setThumbnail(path)
 				.addFields([
 					{ name: 'Banned User', value: `${ban.user} (${formatUserRaw(ban.user)})` },
 					{ name: 'Account Age', value: `<t:${(ban.user.createdTimestamp / 1000.0).toFixed()}:R>` },
@@ -317,7 +314,7 @@ async function main() {
 				await modalInteraction.message.delete();
 			}
 			// Don't show the action row on this embed, it only has a redundant "Ban User" button
-			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed], /*files: [attachment],*/ });
+			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed] });
 
 			for (const oaGuild of (await modalInteraction.client.guilds.fetch()).values()) {
 				const guild = await oaGuild.fetch();
@@ -341,7 +338,7 @@ async function main() {
 						await logMissingPerms();
 						continue;
 					}
-					await modChannel.send({ embeds: [embed], /*files: [attachment],*/ components: [actionRow] }).catch(() => logMissingPerms());
+					await modChannel.send({ embeds: [embed], components: [actionRow] }).catch(() => logMissingPerms());
 				}
 
 				guildData.seen_accounts.push(ban.user.id);
