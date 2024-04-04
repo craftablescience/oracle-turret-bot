@@ -10,12 +10,12 @@ import * as log from '../../utils/log';
 import * as persist from '../../utils/persist';
 
 const Notify: Command = {
-	permissionLevel: PermissionLevel.ADMINISTRATOR,
+	permissionLevel: PermissionLevel.BAN_MEMBERS,
 
 	data: new SlashCommandBuilder()
 		.setName('notify')
 		.setDescription('Send a message to every server with this bot.')
-		.setDefaultMemberPermissions(PermissionLevel.ADMINISTRATOR)
+		.setDefaultMemberPermissions(PermissionLevel.BAN_MEMBERS)
 		.addSubcommand(subcommand => subcommand
 			.setName('false_report')
 			.setDescription('Notify servers of a false report.')
