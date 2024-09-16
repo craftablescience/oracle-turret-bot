@@ -6,11 +6,11 @@ From here on, the word "bot" is in reference to the Oracle Turret Bot unless oth
 
 ### Moderator Requirements
 
-Moderators with access to the bot pledge to uphold the below Code of Conduct. (Don't do anything that would
+Moderators with access to the bot pledge to uphold the below <a href="#oracle-turret-code-of-conduct">Oracle Turret Code of Conduct</a>. (Don't do anything that would
 get you banned from most servers using the bot.)
 
 By interacting with the bot in any way, moderators certify they are above 18 years of age. The bot is frequently
-used to share evidence for bans that may not be appropriate for the eyes of minors.
+used to share evidence for bans that may not be appropriate for minors to view.
 
 ### Guild Requirements
 
