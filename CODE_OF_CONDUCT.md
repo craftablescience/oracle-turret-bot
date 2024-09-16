@@ -65,7 +65,7 @@ Instances of abusive, harassing, or otherwise unacceptable behavior may be repor
 
 All community leaders are obligated to respect the privacy and security of the reporter of any incident.
 
-Instigators of these icidents may have their access to the Oracle Turret bot terminated.
+Instigators of these incidents may have their access to the bot terminated at the discretion of community leaders.
 
 ### Attribution
 
