@@ -1,4 +1,4 @@
-import {GuildMember, PermissionFlagsBits} from 'discord.js';
+import { GuildMember, PermissionFlagsBits } from 'discord.js';
 
 export const PermissionLevel = {
 	EVERYONE: 0n,

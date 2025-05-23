@@ -2,6 +2,10 @@
 	"token": "token goes here",
 	"client_id": "client id goes here",
 
+	"guild": {
+		"banned": ["banned guild ids"]
+	},
+
 	"log": {
 		"errors_and_warnings_channel": ""
 	}

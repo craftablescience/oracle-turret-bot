@@ -185,6 +185,10 @@ async function main() {
 
 	// Listen for banned members
 	client.on('guildBanAdd', async ban => {
+		if ((config.guild.banned as string[]).includes(ban.guild.id)) {
+			return;
+		}
+
 		const data = persist.data(ban.guild.id);
 		if (data.seen_accounts.includes(ban.user.id)) {
 			return;
