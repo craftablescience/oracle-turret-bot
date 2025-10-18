@@ -1,7 +1,7 @@
 // noinspection JSIgnoredPromiseFromCall
 
 import fs from 'fs';
-import { ActionRowBuilder, ActivityType, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, GuildMember, IntentsBitField, ModalActionRowComponentBuilder, ModalBuilder, PermissionsBitField, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { ActionRowBuilder, ActivityType, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, GuildMember, IntentsBitField, LabelBuilder, MessageFlags, ModalBuilder, PermissionsBitField, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { Callbacks, OracleTurretClient } from './types/client';
 import { Command } from './types/interaction';
 import { LogLevelColor } from './utils/log';
@@ -51,7 +51,7 @@ async function main() {
 	client.callbacks = new Callbacks();
 
 	// Run this when the client is ready
-	client.on('ready', async () => {
+	client.on('clientReady', async () => {
 		if (!client.user) {
 			log.writeToLog('Client user is missing? Very strange, investigate!', true);
 			return;
@@ -126,8 +126,8 @@ async function main() {
 				return;
 			}
 		} else if (interaction.isButton() || interaction.isStringSelectMenu()) {
-			if (interaction.message.interaction && interaction.user !== interaction.message.interaction.user) {
-				await interaction.reply({ content: `You cannot touch someone else's buttons! These buttons are owned by ${interaction.message.interaction.user}`, ephemeral: true });
+			if (interaction.message.interactionMetadata && interaction.user !== interaction.message.interactionMetadata.user) {
+				await interaction.reply({ content: `You cannot touch someone else's buttons! These buttons are owned by ${interaction.message.interactionMetadata.user}`, ephemeral: true });
 				return;
 			}
 
@@ -213,42 +213,45 @@ async function main() {
 
 		(ban.client as OracleTurretClient).callbacks.addButtonCallback(ignoreButtonID, async btnInteraction => {
 			if (!btnInteraction.inGuild() || !btnInteraction.guild) {
-				return btnInteraction.reply({ content: 'This button must be clicked in a guild.', ephemeral: true });
+				return btnInteraction.reply({ content: 'This button must be clicked in a guild.', flags: MessageFlags.Ephemeral });
 			}
 			if (btnInteraction.message.deletable) {
 				return btnInteraction.message.delete();
 			}
-			return btnInteraction.reply({ 'content': 'Ignored ban.', ephemeral: true });
+			return btnInteraction.reply({ 'content': 'Ignored ban.', flags: MessageFlags.Ephemeral });
 		});
 
 		(ban.client as OracleTurretClient).callbacks.addButtonCallback(reportButtonID, async btnInteraction => {
 			if (!btnInteraction.inGuild() || !btnInteraction.guild) {
-				return btnInteraction.reply({ content: 'This button must be clicked in a guild.', ephemeral: true });
+				return btnInteraction.reply({ content: 'This button must be clicked in a guild.', flags: MessageFlags.Ephemeral });
 			}
-
-			const modal = new ModalBuilder()
-				.setCustomId(reportButtonID + '_modal')
-				.setTitle('Report User');
 
 			const banRationale = new TextInputBuilder()
 				.setCustomId('ban_rationale')
-				.setLabel('Why was this user banned?')
 				.setStyle(TextInputStyle.Short);
 
-			const banEvidence = new TextInputBuilder()
-				.setCustomId('ban_evidence')
-				.setLabel('Evidence of misconduct:')
+			const banRationaleLabel = new LabelBuilder()
+				.setLabel('Why was this user banned?')
+				.setTextInputComponent(banRationale);
+
+			const banEvidenceText = new TextInputBuilder()
+				.setCustomId('ban_evidence_text')
 				.setStyle(TextInputStyle.Paragraph);
 
-			modal.addComponents(
-				new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(banRationale),
-				new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(banEvidence));
+			const banEvidenceTextLabel = new LabelBuilder()
+				.setLabel('Evidence of misconduct:')
+				.setTextInputComponent(banEvidenceText);
+
+			const modal = new ModalBuilder()
+				.setCustomId(reportButtonID + '_modal')
+				.setTitle('Report User')
+				.addLabelComponents(banRationaleLabel, banEvidenceTextLabel);
 
 			return btnInteraction.showModal(modal);
 		});
 		(ban.client as OracleTurretClient).callbacks.addModalCallback(reportButtonID + '_modal', async modalInteraction => {
-			const banRationale = modalInteraction.components[0].components[0].value;
-			let banEvidence = modalInteraction.components[1].components[0].value;
+			const banRationale = modalInteraction.fields.getTextInputValue('ban_rationale');
+			let banEvidence = modalInteraction.fields.getTextInputValue('ban_evidence_text');
 			if (banEvidence.length === 0) {
 				banEvidence = 'No evidence provided.';
 			}
@@ -274,37 +277,37 @@ async function main() {
 
 			(ban.client as OracleTurretClient).callbacks.addButtonCallback(quickBanButtonID, async btnInteraction => {
 				if (!btnInteraction.inGuild() || !btnInteraction.guild) {
-					return btnInteraction.reply({ content: 'This button must be clicked in a guild.', ephemeral: true });
+					return btnInteraction.reply({ content: 'This button must be clicked in a guild.', flags: MessageFlags.Ephemeral });
 				}
 
 				// Sanity check
 				if (ban.user.id === btnInteraction.guild.members.me?.id) {
-					return btnInteraction.reply({ content: 'Unable to ban myself!', ephemeral: true });
+					return btnInteraction.reply({ content: 'Unable to ban myself!', flags: MessageFlags.Ephemeral });
 				}
 
 				// Check bot has ban permission
 				if (!btnInteraction.guild.members.me?.permissions.has(PermissionsBitField.Flags.BanMembers)) {
-					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: this bot does not have the \`Ban Members\` permission!`, ephemeral: true });
+					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: this bot does not have the \`Ban Members\` permission!`, flags: MessageFlags.Ephemeral });
 				}
 
 				// Check caller has ban permission
 				if (!persist.data(btnInteraction.guild.id).allow_bans_from_anyone) {
 					const callingMember = await btnInteraction.guild.members.fetch(btnInteraction.user).catch(() => null);
 					if (!callingMember?.permissions.has(PermissionsBitField.Flags.BanMembers)) {
-						return btnInteraction.reply({ content: `Unable to ban ${ban.user}: you are missing the \`Ban Members\` permission!`, ephemeral: true });
+						return btnInteraction.reply({ content: `Unable to ban ${ban.user}: you are missing the \`Ban Members\` permission!`, flags: MessageFlags.Ephemeral });
 					}
 				}
 
 				// Check guild already banned member
 				const guildBans = await btnInteraction.guild.bans.fetch().catch(() => null);
 				if (guildBans && guildBans.find(guildBan => guildBan.user.id === ban.user.id)) {
-					return btnInteraction.reply({ content: 'User is already banned in this server!', ephemeral: true });
+					return btnInteraction.reply({ content: 'User is already banned in this server!', flags: MessageFlags.Ephemeral });
 				}
 
 				// Check member is bannable
 				const bannedMember = await btnInteraction.guild.members.fetch(ban.user.id).catch(() => null);
 				if (bannedMember && !bannedMember.bannable) {
-					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: they are not bannable!`, ephemeral: true });
+					return btnInteraction.reply({ content: `Unable to ban ${ban.user}: they are not bannable!`, flags: MessageFlags.Ephemeral });
 				}
 
 				await btnInteraction.guild.bans.create(ban.user, { reason: `Banned by Oracle Turret - "${banRationale}" https://discord.com/channels/${btnInteraction.message.guildId}/ ${btnInteraction.message.channelId}/${btnInteraction.message.id}` });
