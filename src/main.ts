@@ -199,19 +199,21 @@ async function main() {
 			return;
 		}
 
-		const reportButtonID = `${ban.user.id}_report_btn`;
+		const reportButtonID = `${ban.user.id}_${ban.guild.id}_report_btn`;
 		const reportButton = new ButtonBuilder()
 			.setCustomId(reportButtonID)
 			.setLabel('Report')
 			.setStyle(ButtonStyle.Danger);
 
-		const ignoreButtonID = `${ban.user.id}_ignore_btn`;
+		const ignoreButtonID = `${ban.user.id}_${ban.guild.id}_ignore_btn`;
 		const ignoreButton = new ButtonBuilder()
 			.setCustomId(ignoreButtonID)
 			.setLabel('Ignore')
 			.setStyle(ButtonStyle.Secondary);
 
-		(ban.client as OracleTurretClient).callbacks.addButtonCallback(ignoreButtonID, async btnInteraction => {
+		const banClient = ban.client as OracleTurretClient;
+
+		banClient.callbacks.addButtonCallback(ignoreButtonID, async btnInteraction => {
 			if (!btnInteraction.inGuild() || !btnInteraction.guild) {
 				return btnInteraction.reply({ content: 'This button must be clicked in a guild.', flags: MessageFlags.Ephemeral });
 			}
@@ -221,7 +223,7 @@ async function main() {
 			return btnInteraction.reply({ 'content': 'Ignored ban.', flags: MessageFlags.Ephemeral });
 		});
 
-		(ban.client as OracleTurretClient).callbacks.addButtonCallback(reportButtonID, async btnInteraction => {
+		banClient.callbacks.addButtonCallback(reportButtonID, async btnInteraction => {
 			if (!btnInteraction.inGuild() || !btnInteraction.guild) {
 				return btnInteraction.reply({ content: 'This button must be clicked in a guild.', flags: MessageFlags.Ephemeral });
 			}
@@ -249,7 +251,7 @@ async function main() {
 
 			return btnInteraction.showModal(modal);
 		});
-		(ban.client as OracleTurretClient).callbacks.addModalCallback(reportButtonID + '_modal', async modalInteraction => {
+		banClient.callbacks.addModalCallback(reportButtonID + '_modal', async modalInteraction => {
 			const banRationale = modalInteraction.fields.getTextInputValue('ban_rationale');
 			let banEvidence = modalInteraction.fields.getTextInputValue('ban_evidence_text');
 			if (banEvidence.length === 0) {
@@ -275,7 +277,7 @@ async function main() {
 				.setLabel('Ban User')
 				.setStyle(ButtonStyle.Danger);
 
-			(ban.client as OracleTurretClient).callbacks.addButtonCallback(quickBanButtonID, async btnInteraction => {
+			banClient.callbacks.addButtonCallback(quickBanButtonID, async btnInteraction => {
 				if (!btnInteraction.inGuild() || !btnInteraction.guild) {
 					return btnInteraction.reply({ content: 'This button must be clicked in a guild.', flags: MessageFlags.Ephemeral });
 				}
