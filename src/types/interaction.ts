@@ -5,7 +5,7 @@ export interface CommandBase {
 	permissionLevel: bigint,
 	canBeExecutedWithoutPriorGuildSetup?: boolean | undefined,
 	data: unknown,
-	execute(interaction: CommandInteraction, callbacks?: Callbacks): Promise<void | InteractionResponse<boolean> | Message<boolean>>,
+	execute(interaction: CommandInteraction, callbacks?: Callbacks): Promise<void | InteractionResponse | Message>,
 	getAutocompleteOptions?(interaction: AutocompleteInteraction): { name: string, value: string }[],
 }
 

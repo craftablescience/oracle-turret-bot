@@ -1,30 +1,21 @@
-import { ButtonInteraction, Client, ClientOptions, Collection, InteractionResponse, Message, ModalSubmitInteraction, StringSelectMenuInteraction } from 'discord.js';
+import { ButtonInteraction, Client, ClientOptions, Collection, InteractionResponse, Message, ModalSubmitInteraction } from 'discord.js';
 import { CommandBase } from './interaction';
 
-type ButtonCallback = (interaction: ButtonInteraction) => Promise<void | Message<boolean> | InteractionResponse<boolean>>;
-type SelectMenuCallback = (interaction: StringSelectMenuInteraction) => Promise<void | Message<boolean> | InteractionResponse<boolean>>;
+type ButtonCallback = (interaction: ButtonInteraction) => Promise<void | Message | InteractionResponse>;
 type ModalCallback = (interaction: ModalSubmitInteraction) => void;
 
 export class Callbacks {
 	#buttonCallbacks: Map<string, ButtonCallback>;
-	#menuCallbacks: Map<string, SelectMenuCallback>;
 	#modalCallbacks: Map<string, ModalCallback>;
 
 	constructor() {
 		this.#buttonCallbacks = new Map<string, ButtonCallback>();
-		this.#menuCallbacks = new Map<string, SelectMenuCallback>();
 		this.#modalCallbacks = new Map<string, ModalCallback>();
 	}
 
 	addButtonCallback(buttonID: string, callback: ButtonCallback) {
 		if (!this.#buttonCallbacks.has(buttonID)) {
 			this.#buttonCallbacks.set(buttonID, callback);
-		}
-	}
-
-	addSelectMenuCallback(menuID: string, callback: SelectMenuCallback) {
-		if (!this.#menuCallbacks.has(menuID)) {
-			this.#menuCallbacks.set(menuID, callback);
 		}
 	}
 
@@ -38,20 +29,12 @@ export class Callbacks {
 		return this.#buttonCallbacks.get(buttonID)?.(interaction);
 	}
 
-	async runSelectMenuCallback(menuID: string, interaction: StringSelectMenuInteraction) {
-		return this.#menuCallbacks.get(menuID)?.(interaction);
-	}
-
 	async runModalCallback(modalID: string, interaction: ModalSubmitInteraction) {
 		return this.#modalCallbacks.get(modalID)?.(interaction);
 	}
 
 	removeButtonCallback(buttonID: string) {
 		this.#buttonCallbacks.delete(buttonID);
-	}
-
-	removeSelectMenuCallback(menuID: string) {
-		this.#menuCallbacks.delete(menuID);
 	}
 
 	removeModalCallback(modalID: string) {

@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
 import { OracleTurretClient } from '../../types/client';
 import { Command } from '../../types/interaction';

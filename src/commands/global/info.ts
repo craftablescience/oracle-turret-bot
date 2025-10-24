@@ -1,9 +1,11 @@
+// noinspection JSUnusedGlobalSymbols
+
 import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
 import { LogLevelColor } from '../../utils/log';
 import { PermissionLevel } from '../../utils/permissions';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires,@typescript-eslint/no-require-imports
 const packageJSON: { version: number, dependencies: { 'discord.js': string } } = require('../../../package.json');
 
 const Info: Command = {

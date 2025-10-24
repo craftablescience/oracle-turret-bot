@@ -125,7 +125,7 @@ async function main() {
 				}
 				return;
 			}
-		} else if (interaction.isButton() || interaction.isStringSelectMenu()) {
+		} else if (interaction.isButton()) {
 			if (interaction.message.interactionMetadata && interaction.user !== interaction.message.interactionMetadata.user) {
 				await interaction.reply({ content: `You cannot touch someone else's buttons! These buttons are owned by ${interaction.message.interactionMetadata.user}`, ephemeral: true });
 				return;
@@ -134,8 +134,6 @@ async function main() {
 			try {
 				if (interaction.isButton()) {
 					await client.callbacks.runButtonCallback(interaction.customId, interaction);
-				} else if (interaction.isStringSelectMenu()) {
-					await client.callbacks.runSelectMenuCallback(interaction.customId, interaction);
 				}
 			} catch (err) {
 				await log.error(client, err as Error, interaction.guild?.id);
