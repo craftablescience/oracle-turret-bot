@@ -1,7 +1,7 @@
 // noinspection JSIgnoredPromiseFromCall
 
 import fs from 'fs';
-import { ActionRowBuilder, ActivityType, ButtonBuilder, ButtonStyle, Collection, EmbedBuilder, GuildMember, IntentsBitField, LabelBuilder, MessageFlags, ModalBuilder, PermissionsBitField, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { ActionRowBuilder, ActivityType, AttachmentBuilder, ButtonBuilder, ButtonStyle, Collection, ContainerBuilder, FileUploadBuilder, GuildMember, IntentsBitField, LabelBuilder, MediaGalleryBuilder, MessageFlags, ModalBuilder, PermissionsBitField, SeparatorSpacingSize, TextDisplayBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { Callbacks, OracleTurretClient } from './types/client';
 import { Command } from './types/interaction';
 import { LogLevelColor } from './utils/log';
@@ -9,6 +9,7 @@ import { getModChannel } from './utils/mod_channel';
 import { hasPermissionLevel } from './utils/permissions';
 import { updateCommands, updateCommandsForGuild } from './utils/update_commands';
 import { formatUserRaw } from './utils/utils';
+import fetch from 'node-fetch';
 
 import * as config from './config.json';
 import * as log from './utils/log';
@@ -242,38 +243,88 @@ async function main() {
 				.setLabel('Evidence of misconduct:')
 				.setTextInputComponent(banEvidenceText);
 
+			const banEvidenceAttachments = new FileUploadBuilder()
+				.setCustomId('ban_evidence_attachments')
+				.setRequired(false)
+				.setMinValues(0)
+				.setMaxValues(10);
+
+			const banEvidenceAttachmentsLabel = new LabelBuilder()
+				.setLabel('Optional attachments:')
+				.setFileUploadComponent(banEvidenceAttachments);
+
 			const modal = new ModalBuilder()
 				.setCustomId(reportButtonID + '_modal')
 				.setTitle('Report User')
-				.addLabelComponents(banRationaleLabel, banEvidenceTextLabel);
+				.addLabelComponents(banRationaleLabel, banEvidenceTextLabel, banEvidenceAttachmentsLabel);
 
 			return btnInteraction.showModal(modal);
 		});
 		banClient.callbacks.addModalCallback(reportButtonID + '_modal', async modalInteraction => {
 			const banRationale = modalInteraction.fields.getTextInputValue('ban_rationale');
-			let banEvidence = modalInteraction.fields.getTextInputValue('ban_evidence_text');
-			if (banEvidence.length === 0) {
-				banEvidence = 'No evidence provided.';
+			let banEvidenceText = modalInteraction.fields.getTextInputValue('ban_evidence_text');
+			const banEvidenceAttachments = modalInteraction.fields.getUploadedFiles('ban_evidence_attachments');
+
+			if (banEvidenceText.length === 0) {
+				banEvidenceText = 'No evidence provided.';
 			}
 
-			const embed = new EmbedBuilder()
-				.setColor(LogLevelColor.WARNING)
-				.setTitle('New Ban Report')
-				.addFields([
-					{ name: 'Banned User', value: `${ban.user} (${formatUserRaw(ban.user)})` },
-					{ name: 'Account Age', value: `<t:${(ban.user.createdTimestamp / 1000.0).toFixed()}:R>` },
-					{ name: 'Originating Server', value: ban.guild?.name ?? 'Unknown' },
-					{ name: 'Why was this user banned?', value: banRationale },
-					{ name: 'Evidence of misconduct:', value: banEvidence },
-					{ name: 'Manual Ban Command', value: `\`/ban user:<@${ban.user.id}>\`` },
-				])
-				.setTimestamp(Date.now());
+			const submittedMessage = new TextDisplayBuilder()
+				.setContent('Submitted ban report to network!');
+
+			const reportMessageContainer = new ContainerBuilder()
+				.setAccentColor(log.colorToNumber(LogLevelColor.WARNING))
+				.addTextDisplayComponents(
+					textDisplay => textDisplay
+						.setContent('# New Ban Report'),
+				)
+				.addSeparatorComponents(
+					separator => separator
+						.setSpacing(SeparatorSpacingSize.Small),
+				)
+				.addTextDisplayComponents(
+					textDisplay => textDisplay
+						.setContent(`### Banned User\n${ban.user} (${formatUserRaw(ban.user)}), ID \`${ban.user.id}\``),
+					textDisplay => textDisplay
+						.setContent(`### Account Age\n<t:${(ban.user.createdTimestamp / 1000.0).toFixed()}:R>`),
+					textDisplay => textDisplay
+						.setContent(`### Originating Server\n${ban.guild?.name ?? 'Unknown'}`),
+					textDisplay => textDisplay
+						.setContent(`### Why was this user banned?\n${banRationale}`),
+					textDisplay => textDisplay
+						.setContent(`### Evidence of Misconduct\n${banEvidenceText}`),
+				);
+
+			const files: AttachmentBuilder[] = [];
+			if (banEvidenceAttachments) {
+				const mediaGallery = new MediaGalleryBuilder();
+				for (const [, attachment] of banEvidenceAttachments.entries()) {
+					const currentAttachment = new AttachmentBuilder(await (await fetch(attachment.url)).buffer())
+						.setName(attachment.name)
+						.setSpoiler(true);
+					mediaGallery.spliceItems(
+						0,
+						0,
+						item => item
+							.setSpoiler(true)
+							.setURL(`attachment://${currentAttachment.name}`),
+					);
+					files.push(currentAttachment);
+				}
+				reportMessageContainer.addMediaGalleryComponents(mediaGallery);
+			}
 
 			const quickBanButtonID = `${ban.user.id}_quick_ban_btn`;
 			const quickBanButton = new ButtonBuilder()
 				.setCustomId(quickBanButtonID)
 				.setLabel('Ban User')
 				.setStyle(ButtonStyle.Danger);
+
+			reportMessageContainer
+				.addActionRowComponents(
+					actionRow => actionRow
+						.addComponents(quickBanButton)
+				);
 
 			banClient.callbacks.addButtonCallback(quickBanButtonID, async btnInteraction => {
 				if (!btnInteraction.inGuild() || !btnInteraction.guild) {
@@ -314,14 +365,10 @@ async function main() {
 				return btnInteraction.reply({ content: `${btnInteraction.user} banned user ${ban.user}!` });
 			});
 
-			const actionRow = new ActionRowBuilder<ButtonBuilder>()
-				.addComponents(quickBanButton);
-
+			await modalInteraction.reply({ components: [submittedMessage, reportMessageContainer], files: files, flags: MessageFlags.IsComponentsV2 });
 			if (modalInteraction.message?.deletable) {
 				await modalInteraction.message.delete();
 			}
-			// Don't show the action row on this embed, it only has a redundant "Ban User" button
-			await modalInteraction.reply({ content: 'Submitted ban report to network!', embeds: [embed] });
 
 			for (const oaGuild of (await modalInteraction.client.guilds.fetch()).values()) {
 				const guild = await oaGuild.fetch();
@@ -345,7 +392,7 @@ async function main() {
 						await logMissingPerms();
 						continue;
 					}
-					await modChannel.send({ embeds: [embed], components: [actionRow] }).catch(() => logMissingPerms());
+					await modChannel.send({ components: [reportMessageContainer], files: files, flags: MessageFlags.IsComponentsV2 }).catch(() => logMissingPerms());
 				}
 
 				guildData.seen_accounts.push(ban.user.id);

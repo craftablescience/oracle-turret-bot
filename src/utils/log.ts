@@ -9,6 +9,10 @@ export enum LogLevelColor {
 	ERROR     = '#ff0000',
 }
 
+export function colorToNumber(color: LogLevelColor) {
+	return parseInt(color.substring(1), 16);
+}
+
 export function writeToLog(message: string, sendToConsole = false) {
 	// Print it to the console
 	if (sendToConsole) {
