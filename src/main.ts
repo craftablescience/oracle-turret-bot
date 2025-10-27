@@ -184,7 +184,7 @@ async function main() {
 
 	// Listen for banned members
 	client.on('guildBanAdd', async ban => {
-		if ((config.guild.banned as string[]).includes(ban.guild.id)) {
+		if (!config.whitelists.guilds.includes(ban.guild.id)) {
 			return;
 		}
 

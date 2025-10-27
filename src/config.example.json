@@ -2,8 +2,13 @@
 	"token": "token goes here",
 	"client_id": "client id goes here",
 
-	"guild": {
-		"banned": ["banned guild ids"]
+	"whitelists": {
+		"guilds": [
+			"whitelisted guild ID"
+		],
+		"notify_broadcast_users": [
+			"whitelisted user ID"
+		]
 	},
 
 	"log": {

@@ -36,9 +36,9 @@ export async function updateCommands() {
 	// Update commands for every guild
 	const rest = new REST().setToken(config.token);
 	for (const guild of (await client.guilds.fetch()).values()) {
-		if ((config.guild.banned as string[]).includes(guild.id)) {
+		if (!config.whitelists.guilds.includes(guild.id)) {
 			await rest.put(Routes.applicationGuildCommands(config.client_id, guild.id), { body: [] });
-			log.writeToLog(`Registered 0 guild commands for BANNED ${guild.id}`, true);
+			log.writeToLog(`Registered 0 guild commands for UNWHITELISTED ${guild.id}`, true);
 			continue;
 		}
 
@@ -63,7 +63,7 @@ export async function updateCommands() {
 
 export async function updateCommandsForGuild(guildID: string) {
 	const guildCommands = [];
-	if (!(config.guild.banned as string[]).includes(guildID)) {
+	if (config.whitelists.guilds.includes(guildID)) {
 		for (const file of fs.readdirSync('./build/commands/guild').filter(file => file.endsWith('.js'))) {
 			guildCommands.push((await import(`../commands/guild/${file}`)).default);
 		}

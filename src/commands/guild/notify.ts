@@ -8,6 +8,7 @@ import { getModChannel } from '../../utils/mod_channel';
 import { PermissionLevel } from '../../utils/permissions';
 import { formatUserRaw } from '../../utils/utils';
 
+import * as config from '../../config.json';
 import * as log from '../../utils/log';
 import * as persist from '../../utils/persist';
 
@@ -30,6 +31,13 @@ const Notify: Command = {
 				.setDescription('Extra details that will be included with the false ban notification')
 				.setMinLength(10)
 				.setMaxLength(1000)
+				.setRequired(true)))
+		.addSubcommand(subcommand => subcommand
+			.setName('broadcast')
+			.setDescription('Send a message to every server with this bot. This command only works for a select group of people.')
+			.addStringOption(option => option
+				.setName('message')
+				.setDescription('The contents of the broadcasted message')
 				.setRequired(true))),
 
 	async execute(interaction: CommandInteraction) {
@@ -135,6 +143,50 @@ const Notify: Command = {
 				guildData.seen_accounts = guildData.seen_accounts.filter(id => id !== interaction.options.getString('user_id', true));
 				persist.saveData(guild.id);
 			}
+			break;
+		}
+		case 'broadcast': {
+			const message = interaction.options.getString('message', true);
+
+			if (!config.whitelists.notify_broadcast_users.includes(interaction.user.id)) {
+				return interaction.reply({ content: 'Unable to broadcast message: user is not whitelisted!', flags: MessageFlags.Ephemeral });
+			}
+
+			// We do a little white lie here so the interaction doesn't have to be deferred
+			await interaction.reply({ content: 'Message broadcasted!', flags: MessageFlags.Ephemeral });
+
+			const broadcastContainer = new ContainerBuilder()
+				.setAccentColor(log.colorToNumber(LogLevelColor.WARNING))
+				.addTextDisplayComponents(
+					textDisplay => textDisplay
+						.setContent('# Broadcasted Message'),
+				)
+				.addSeparatorComponents(
+					separator => separator
+						.setSpacing(SeparatorSpacingSize.Large),
+				)
+				.addTextDisplayComponents(
+					textDisplay => textDisplay
+						.setContent(`> ${message}\n  — ${interaction.user} (${formatUserRaw(interaction.user)})`),
+				);
+
+			for (const oaGuild of (await interaction.client.guilds.fetch()).values()) {
+				const guild = await oaGuild.fetch();
+				const guildData = persist.data(guild.id);
+				if (!guildData.first_time_setup)
+					continue;
+
+				const logMissingPerms = async () => await log.error(interaction.client, `Unable to send broadcast message to guild "${guild.name}" (${guild.id}): check channel permissions!`);
+
+				const modChannel = await getModChannel(interaction.client, guild);
+				if (!modChannel) {
+					await logMissingPerms();
+					continue;
+				}
+				await modChannel.send({ components: [broadcastContainer], flags: MessageFlags.IsComponentsV2 }).catch(() => logMissingPerms());
+			}
+
+			break;
 		}
 		}
 	}
