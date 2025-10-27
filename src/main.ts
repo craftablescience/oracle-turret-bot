@@ -288,7 +288,7 @@ async function main() {
 					textDisplay => textDisplay
 						.setContent(`### Account Age\n<t:${(ban.user.createdTimestamp / 1000.0).toFixed()}:R>`),
 					textDisplay => textDisplay
-						.setContent(`### Originating Server\n${ban.guild?.name ?? 'Unknown'}`),
+						.setContent(`### Originating Server & Reporter\n${ban.guild?.name ?? 'Unknown'} - ${modalInteraction.user} (${formatUserRaw(modalInteraction.user)})`),
 					textDisplay => textDisplay
 						.setContent(`### Why was this user banned?\n${banRationale}`),
 					textDisplay => textDisplay
@@ -321,6 +321,11 @@ async function main() {
 				.setStyle(ButtonStyle.Danger);
 
 			reportMessageContainer
+				.addSeparatorComponents(
+					separator => separator
+						.setDivider(false)
+						.setSpacing(SeparatorSpacingSize.Small)
+				)
 				.addActionRowComponents(
 					actionRow => actionRow
 						.addComponents(quickBanButton)
