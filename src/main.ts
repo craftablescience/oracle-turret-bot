@@ -280,7 +280,7 @@ async function main() {
 				)
 				.addSeparatorComponents(
 					separator => separator
-						.setSpacing(SeparatorSpacingSize.Small),
+						.setSpacing(SeparatorSpacingSize.Large),
 				)
 				.addTextDisplayComponents(
 					textDisplay => textDisplay
