@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import { ChannelType, CommandInteraction, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
+import { ChannelType, CommandInteraction, MessageFlags, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
 import { PermissionLevel } from '../../utils/permissions';
 import { updateCommandsForGuild } from '../../utils/update_commands';
@@ -27,10 +27,10 @@ const Setup: Command = {
 	async execute(interaction: CommandInteraction) {
 		if (!interaction.isChatInputCommand()) return;
 		if (!interaction.inGuild() || !interaction.guild) {
-			return interaction.reply({ content: 'This command must be ran in a guild.', ephemeral: true });
+			return interaction.reply({ content: 'This command must be ran in a guild.', flags: MessageFlags.Ephemeral });
 		}
 
-		await interaction.deferReply({ ephemeral: true });
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 		const modChannel = interaction.options.getChannel('mod_channel', true, [ChannelType.GuildText]);
 		if (!modChannel.permissionsFor(interaction.client.user)?.has(PermissionsBitField.Flags.ViewChannel) ||

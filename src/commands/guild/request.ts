@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { CommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
 import { PermissionLevel } from '../../utils/permissions';
 
@@ -20,7 +20,7 @@ const Request: Command = {
 	async execute(interaction: CommandInteraction) {
 		if (!interaction.isChatInputCommand()) return;
 		if (!interaction.inGuild() || !interaction.guild) {
-			return interaction.reply({ content: 'This command must be ran in a guild.', ephemeral: true });
+			return interaction.reply({ content: 'This command must be ran in a guild.', flags: MessageFlags.Ephemeral });
 		}
 
 		switch (interaction.options.getSubcommand()) {

@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import { CommandInteraction, EmbedBuilder, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, MessageFlags, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
 import { LogLevelColor } from '../../utils/log';
 import { getModChannel } from '../../utils/mod_channel';
@@ -19,7 +19,7 @@ const ServerList: Command = {
 	async execute(interaction: CommandInteraction) {
 		let list = '';
 
-		await interaction.deferReply({ ephemeral: true });
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 		const guilds = await interaction.client.guilds.fetch();
 		for (const oaGuild of guilds.values()) {

@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import { CommandInteraction, EmbedBuilder, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, MessageFlags, PermissionsBitField, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../../types/interaction';
 import { LogLevelColor } from '../../utils/log';
 import { getModChannel } from '../../utils/mod_channel';
@@ -17,7 +17,7 @@ const Status: Command = {
 	async execute(interaction: CommandInteraction) {
 		if (!interaction.isChatInputCommand()) return;
 		if (!interaction.inGuild() || !interaction.guild) {
-			return interaction.reply({ content: 'This command must be ran in a guild.', ephemeral: true });
+			return interaction.reply({ content: 'This command must be ran in a guild.', flags: MessageFlags.Ephemeral });
 		}
 
 		const modChannel = await getModChannel(interaction.client, interaction.guild);
@@ -31,7 +31,7 @@ const Status: Command = {
 				{ name: 'Optional:', value: `- Has \`Ban Members\` permission: ${interaction.guild.members.me?.permissions.has(PermissionsBitField.Flags.BanMembers) ? '✅' : '❌'}` })
 			.setTimestamp();
 
-		return interaction.reply({ embeds: [embed], ephemeral: true });
+		return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 	}
 };
 export default Status;
