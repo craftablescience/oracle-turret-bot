@@ -51,6 +51,10 @@ const Notify: Command = {
 			const user_id = interaction.options.getString('user_id', true);
 			const details = interaction.options.getString('details', true);
 
+			if (!config.whitelists.guilds.includes(interaction.guild.id)) {
+				return interaction.reply({ content: 'Unable to send false report: guild is not whitelisted!', flags: MessageFlags.Ephemeral });
+			}
+
 			const data = persist.data(interaction.guild.id);
 			if (!data.seen_accounts.includes(user_id)) {
 				return interaction.reply({ content: 'Unable to send notification: user ID has not been reported before!', flags: MessageFlags.Ephemeral });

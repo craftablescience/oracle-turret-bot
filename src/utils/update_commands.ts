@@ -36,12 +36,6 @@ export async function updateCommands() {
 	// Update commands for every guild
 	const rest = new REST().setToken(config.token);
 	for (const guild of (await client.guilds.fetch()).values()) {
-		if (!config.whitelists.guilds.includes(guild.id)) {
-			await rest.put(Routes.applicationGuildCommands(config.client_id, guild.id), { body: [] });
-			log.writeToLog(`Registered 0 guild commands for UNWHITELISTED ${guild.id}`, true);
-			continue;
-		}
-
 		const data = persist.data(guild.id);
 		let filteredCommands = guildCommands;
 		if (!data.first_time_setup) {
@@ -63,10 +57,8 @@ export async function updateCommands() {
 
 export async function updateCommandsForGuild(guildID: string) {
 	const guildCommands = [];
-	if (config.whitelists.guilds.includes(guildID)) {
-		for (const file of fs.readdirSync('./build/commands/guild').filter(file => file.endsWith('.js'))) {
-			guildCommands.push((await import(`../commands/guild/${file}`)).default);
-		}
+	for (const file of fs.readdirSync('./build/commands/guild').filter(file => file.endsWith('.js'))) {
+		guildCommands.push((await import(`../commands/guild/${file}`)).default);
 	}
 
 	const data = persist.data(guildID);
