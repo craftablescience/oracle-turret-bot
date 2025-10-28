@@ -77,9 +77,11 @@ const Notify: Command = {
 				)
 				.addTextDisplayComponents(
 					textDisplay => textDisplay
-						.setContent(`### Falsely Reported User\n${user} (${formatUserRaw(user)}), ID \`${user.id}\``),
+						.setContent(`### Falsely Reported User\n${user} (${formatUserRaw(user)})\nID \`${user.id}\``),
 					textDisplay => textDisplay
-						.setContent(`### Notification Origin\n${interaction.guild?.name ?? 'Unknown Server'} - ${interaction.user} (${formatUserRaw(interaction.user)})`),
+						.setContent(`### Notification Origin\n${interaction.guild?.name ?? 'Unknown Server'}\nID \`${interaction.guild?.id ?? '0'}\``),
+					textDisplay => textDisplay
+						.setContent(`### Notification Sender\n${interaction.user} (${formatUserRaw(interaction.user)})\nID \`${interaction.user.id}\``),
 					textDisplay => textDisplay
 						.setContent(`### Details\n${details}`),
 				);

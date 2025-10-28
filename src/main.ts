@@ -284,11 +284,13 @@ async function main() {
 				)
 				.addTextDisplayComponents(
 					textDisplay => textDisplay
-						.setContent(`### Banned User\n${ban.user} (${formatUserRaw(ban.user)}), ID \`${ban.user.id}\``),
+						.setContent(`### Banned User\n${ban.user} (${formatUserRaw(ban.user)})\nID \`${ban.user.id}\``),
 					textDisplay => textDisplay
 						.setContent(`### Account Age\n<t:${(ban.user.createdTimestamp / 1000.0).toFixed()}:R>`),
 					textDisplay => textDisplay
-						.setContent(`### Originating Server & Reporter\n${ban.guild?.name ?? 'Unknown'} - ${modalInteraction.user} (${formatUserRaw(modalInteraction.user)})`),
+						.setContent(`### Originating Server\n${ban.guild.name}\nID \`${ban.guild.id}\``),
+					textDisplay => textDisplay
+						.setContent(`### Ban Reporter\n${modalInteraction.user} (${formatUserRaw(modalInteraction.user)})\nID \`${modalInteraction.user.id}\``),
 					textDisplay => textDisplay
 						.setContent(`### Why was this user banned?\n${banRationale}`),
 					textDisplay => textDisplay
