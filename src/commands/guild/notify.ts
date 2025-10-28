@@ -173,7 +173,7 @@ const Notify: Command = {
 				)
 				.addTextDisplayComponents(
 					textDisplay => textDisplay
-						.setContent(`> ${message}\n  — ${interaction.user} (${formatUserRaw(interaction.user)})`),
+						.setContent(`> ${message.split('\\n').join('\n> ')}\n  — ${interaction.user} (${formatUserRaw(interaction.user)})`),
 				);
 
 			for (const oaGuild of (await interaction.client.guilds.fetch()).values()) {
