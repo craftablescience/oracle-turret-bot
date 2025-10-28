@@ -6,6 +6,7 @@ import { LogLevelColor } from '../../utils/log';
 import { getModChannel } from '../../utils/mod_channel';
 import { PermissionLevel } from '../../utils/permissions';
 
+import * as config from '../../config.json';
 import * as persist from '../../utils/persist';
 
 const ServerList: Command = {
@@ -26,7 +27,17 @@ const ServerList: Command = {
 			const data = persist.data(oaGuild.id);
 			const guild = await oaGuild.fetch();
 			const modChannel = await getModChannel(interaction.client, guild);
-			list += `\n- \`${!data.first_time_setup ? '—' : (modChannel ? '✔' : '✖')}\` ${guild.name} (\`${guild.id}\`): ${(await guild.fetch()).memberCount} members`;
+			list += '\n- `';
+			if (!config.whitelists.guilds.includes(guild.id)) {
+				list += '!';
+			} else if (!data.first_time_setup) {
+				list += '—';
+			} else if (modChannel) {
+				list += '✔';
+			} else {
+				list += '✖';
+			}
+			list += `\` ${guild.name} (\`${guild.id}\`): ${(await guild.fetch()).memberCount} members`;
 		}
 		list = list.substring(1);
 
