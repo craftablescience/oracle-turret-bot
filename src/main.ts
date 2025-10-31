@@ -34,7 +34,10 @@ async function main() {
 		intents: new IntentsBitField([
 			IntentsBitField.Flags.Guilds,
 			IntentsBitField.Flags.GuildModeration,
-		])
+		]),
+		allowedMentions: {
+			users: [],
+		},
 	});
 
 	// Register commands
