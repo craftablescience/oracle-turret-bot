@@ -1,6 +1,6 @@
 {
 	"name": "oracle-turret-bot",
-	"version": "2.1.1",
+	"version": "2.1.2",
 	"engines": {
 		"node": ">=22.0.0"
 	},
@@ -28,16 +28,16 @@
 	},
 	"dependencies": {
 		"console-stamp": "^3.1.2",
-		"discord-api-types": "^0.38.31",
-		"discord.js": "^14.24.0",
+		"discord-api-types": "^0.38.36",
+		"discord.js": "^14.25.1",
 		"node-fetch": "^2.6.7"
 	},
 	"devDependencies": {
-		"@types/node": "^24.9.1",
+		"@types/node": "^24.10.1",
 		"@types/node-fetch": "^2.5.7",
-		"@typescript-eslint/eslint-plugin": "^8.46.2",
-		"@typescript-eslint/parser": "^8.46.2",
-		"eslint": "^9.38.0",
+		"@typescript-eslint/eslint-plugin": "^8.48.1",
+		"@typescript-eslint/parser": "^8.48.1",
+		"eslint": "^9.39.1",
 		"tsc-watch": "^7.2.0",
 		"typescript": "^5.9.3"
 	}
