@@ -191,6 +191,10 @@ async function main() {
 			return;
 		}
 
+		if (ban.user.bot) {
+			return;
+		}
+
 		const data = persist.data(ban.guild.id);
 		if (data.seen_accounts.includes(ban.user.id)) {
 			return;
