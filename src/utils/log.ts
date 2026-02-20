@@ -28,7 +28,7 @@ export function writeToLog(message: string, sendToConsole = false) {
 }
 
 // Modified from https://github.com/ud-cis-discord/Sage/blob/b874c716e0c1a153e5162ee0e928cb9af536bae6/src/pieces/logs/errorLog.ts#L16
-async function generateErrorEmbed(error: string | Error, guildID?: string | undefined | null): Promise<[EmbedBuilder, AttachmentBuilder[]]> {
+export async function generateErrorEmbed(error: string | Error, guildID?: string | undefined | null): Promise<[EmbedBuilder, AttachmentBuilder[]]> {
 	const embed = new EmbedBuilder();
 	const attachments: AttachmentBuilder[] = [];
 

@@ -28,14 +28,15 @@ const ServerList: Command = {
 			const guild = await oaGuild.fetch();
 			const modChannel = await getModChannel(interaction.client, guild);
 			list += '\n- `';
-			if (!config.whitelists.guilds.includes(guild.id)) {
-				list += '!';
-			} else if (!data.first_time_setup) {
+			if (!data.first_time_setup) {
 				list += '—';
 			} else if (modChannel) {
 				list += '✔';
 			} else {
 				list += '✖';
+			}
+			if (!config.whitelists.guilds.includes(guild.id)) {
+				list += '!';
 			}
 			list += `\` ${guild.name} (\`${guild.id}\`): ${(await guild.fetch()).memberCount} members`;
 		}
