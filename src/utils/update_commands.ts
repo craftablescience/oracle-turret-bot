@@ -43,7 +43,7 @@ export async function updateCommands() {
 		}
 		filteredCommands = filteredCommands.map(cmd => cmd.data.toJSON());
 		await rest.put(Routes.applicationGuildCommands(config.client_id, guild.id), { body: filteredCommands });
-		log.writeToLog(`Registered ${filteredCommands.length} guild commands for ${guild.id}`, true);
+		log.writeToLog(`Registered ${filteredCommands.length} guild commands for ${guild.id} (${guild.name})`, true);
 	}
 
 	// And register global commands
